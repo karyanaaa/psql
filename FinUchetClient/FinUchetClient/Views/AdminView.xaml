@@ -1,0 +1,100 @@
+﻿<UserControl x:Class="FinUchetClient.Views.AdminView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Background="#F5F7FA">
+
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- Заголовок -->
+        <Border Grid.Row="0" Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
+            <StackPanel>
+                <TextBlock Text="👑 Управление пользователями" FontSize="24" FontWeight="Bold" Foreground="#2C3E50"/>
+                <TextBlock Text="Блокировка, разблокировка и удаление учетных записей" FontSize="13" Foreground="#7F8C8D" Margin="0,5,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Таблица пользователей -->
+        <Border Grid.Row="1" Background="White" Padding="20" CornerRadius="8">
+            <StackPanel>
+                <TextBlock Text="📋 Список пользователей" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                <DataGrid x:Name="UsersGrid" AutoGenerateColumns="True" IsReadOnly="True" 
+                          RowHeight="45" FontSize="13" GridLinesVisibility="Horizontal"
+                          AlternatingRowBackground="#F8F9FA" SelectionChanged="UsersGrid_SelectionChanged"/>
+
+                <Separator Margin="0,20,0,20"/>
+
+                <!-- Панель управления выбранным пользователем -->
+                <Border Background="#F8F9FA" Padding="15" CornerRadius="8" Margin="0,0,0,15">
+                    <StackPanel>
+                        <TextBlock Text="⚙️ Действия с выбранным пользователем" FontSize="16" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+
+                        <TextBlock x:Name="SelectedUserText" Text="Пользователь не выбран" Foreground="#7F8C8D" Margin="0,0,0,15"/>
+
+                        <WrapPanel>
+                            <!-- Блокировка на время -->
+                            <Border Background="White" Padding="15" CornerRadius="8" Margin="0,0,15,0" Width="300">
+                                <StackPanel>
+                                    <TextBlock Text="🔒 Блокировка на время" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <ComboBox x:Name="BlockTimeComboBox" Width="150" Height="30" Margin="0,0,0,10">
+                                        <ComboBoxItem Content="На 1 час" Tag="1"/>
+                                        <ComboBoxItem Content="На 3 часа" Tag="3"/>
+                                        <ComboBoxItem Content="На 6 часов" Tag="6"/>
+                                        <ComboBoxItem Content="На 12 часов" Tag="12"/>
+                                        <ComboBoxItem Content="На 24 часа" Tag="24"/>
+                                        <ComboBoxItem Content="На 3 дня" Tag="72"/>
+                                        <ComboBoxItem Content="На 7 дней" Tag="168"/>
+                                        <ComboBoxItem Content="Навсегда" Tag="0"/>
+                                    </ComboBox>
+                                    <Button Content="🔒 Заблокировать" Background="#E74C3C" Foreground="White" 
+                                            Padding="10" Click="BlockUser_Click" Height="35"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Разблокировка -->
+                            <Border Background="White" Padding="15" CornerRadius="8" Margin="0,0,15,0" Width="200">
+                                <StackPanel>
+                                    <TextBlock Text="🔓 Разблокировка" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <Button Content="🔓 Разблокировать" Background="#2ECC71" Foreground="White" 
+                                            Padding="10" Click="UnblockUser_Click" Height="35"/>
+                                </StackPanel>
+                            </Border>
+
+                            <!-- Удаление пользователя -->
+                            <Border Background="White" Padding="15" CornerRadius="8" Width="200">
+                                <StackPanel>
+                                    <TextBlock Text="🗑️ Удаление" FontWeight="Bold" Margin="0,0,0,10"/>
+                                    <Button Content="🗑️ Удалить навсегда" Background="#C0392B" Foreground="White" 
+                                            Padding="10" Click="DeleteUser_Click" Height="35"/>
+                                </StackPanel>
+                            </Border>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+
+                <!-- Сообщения от пользователей -->
+                <Border Background="#F8F9FA" Padding="15" CornerRadius="8">
+                    <StackPanel>
+                        <TextBlock Text="✉️ Сообщения от пользователей" FontSize="16" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
+                        <DataGrid x:Name="MessagesGrid" AutoGenerateColumns="True" IsReadOnly="True" 
+                                  RowHeight="40" FontSize="12" GridLinesVisibility="Horizontal"
+                                  AlternatingRowBackground="#F8F9FA" Height="250"
+                                  SelectionChanged="MessagesGrid_SelectionChanged"/>
+
+                        <StackPanel Margin="0,15,0,0">
+                            <TextBlock Text="Ответ на сообщение:" Foreground="#666" Margin="0,0,0,5"/>
+                            <TextBox x:Name="ResponseBox" Height="80" TextWrapping="Wrap" AcceptsReturn="True"
+                                     Margin="0,0,0,10"/>
+                            <Button Content="📤 Отправить ответ" Width="150" Height="35" Background="#3498DB" 
+                                    Foreground="White" Click="SendResponse_Click" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

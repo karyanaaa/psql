@@ -1,0 +1,36 @@
+# Визуальная студия
+.vs/
+bin/
+obj/
+Debug/
+Release/
+*.user
+*.suo
+
+# Файлы БД
+*.db
+*.sqlite
+*.mdf
+*.ldf
+
+# Логи
+*.log
+logs/
+
+# Пользовательские настройки
+*.config.user
+launchSettings.json
+
+# Временные файлы
+*.tmp
+*.temp
+Thumbs.db
+Desktop.ini
+
+# Папки пакетов
+packages/
+**/packages/
+
+# Результаты сборки
+**/bin/
+**/obj/
