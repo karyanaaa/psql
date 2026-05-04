@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Windows;
-using System.Windows.Input;
 using FinUchetClient.Models;
 using FinUchetClient.Services;
 
@@ -38,9 +37,6 @@ namespace FinUchetClient.Views
 
         private void LoadTransactionData()
         {
-            // Устанавливаем тип
-            TypeBox.SelectedIndex = _originalTransaction.Type == "income" ? 0 : 1;
-
             // Устанавливаем сумму
             AmountBox.Text = _originalTransaction.Amount.ToString();
 
@@ -49,43 +45,6 @@ namespace FinUchetClient.Views
 
             // Устанавливаем дату
             DatePicker.SelectedDate = _originalTransaction.Date;
-        }
-
-        private void TypeBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
-        {
-            // Обновляем список категорий при смене типа
-            if (_categories != null && CategoryBox != null)
-            {
-                var selectedItem = TypeBox.SelectedItem as System.Windows.Controls.ComboBoxItem;
-                if (selectedItem != null)
-                {
-                    string selectedType = selectedItem.Content.ToString();
-                    string type = selectedType.Contains("Доход") ? "income" : "expense";
-
-                    var filtered = _categories.Where(c => c.Type == type).ToList();
-                    CategoryBox.ItemsSource = filtered;
-
-                    if (filtered.Any())
-                        CategoryBox.SelectedIndex = 0;
-                }
-            }
-        }
-
-        private void AmountBox_PreviewTextInput(object sender, TextCompositionEventArgs e)
-        {
-            foreach (char c in e.Text)
-            {
-                if (!char.IsDigit(c) && c != '.')
-                {
-                    e.Handled = true;
-                    return;
-                }
-            }
-
-            if (e.Text.Contains('.') && ((System.Windows.Controls.TextBox)sender).Text.Contains('.'))
-            {
-                e.Handled = true;
-            }
         }
 
         private void SaveButton_Click(object sender, RoutedEventArgs e)
@@ -103,8 +62,9 @@ namespace FinUchetClient.Views
             }
 
             var selectedCategory = CategoryBox.SelectedItem as CategoryModel;
-            var selectedTypeItem = TypeBox.SelectedItem as System.Windows.Controls.ComboBoxItem;
-            string transactionType = selectedTypeItem.Content.ToString().Contains("Доход") ? "income" : "expense";
+
+            // Тип берется из выбранной категории
+            string transactionType = selectedCategory.Type;
 
             UpdatedTransaction = new TransactionModel
             {

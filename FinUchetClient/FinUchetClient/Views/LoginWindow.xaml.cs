@@ -1,6 +1,7 @@
 ﻿using FinUchetClient.Services;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace FinUchetClient.Views
 {
@@ -14,6 +15,11 @@ namespace FinUchetClient.Views
         public LoginWindow(AuthService authService, ApiService apiService)
         {
             InitializeComponent();
+            this.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    this.DragMove();
+            };
             _authService = authService;
             _apiService = apiService;
         }

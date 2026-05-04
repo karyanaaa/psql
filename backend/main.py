@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, status, Response 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
@@ -484,3 +485,111 @@ def get_admin_stats(db: Session = Depends(database.get_db), admin: models.User =
         "total_messages": total_messages,
         "unread_messages": unread_messages
     }
+
+
+    # Получение транзакций пользователя (админ)
+@app.get("/admin/users/{user_id}/transactions")
+def get_user_transactions(user_id: int, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    return transactions
+
+# Получение инвестиций пользователя (админ)
+@app.get("/admin/users/{user_id}/investments")
+def get_user_investments(user_id: int, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    investments = db.query(models.Investment).filter(models.Investment.user_id == user_id).all()
+    return investments
+
+# Получение сообщений пользователя (админ)
+@app.get("/admin/users/{user_id}/messages")
+def get_user_messages(user_id: int, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    messages = db.query(models.UserMessage).filter(
+        (models.UserMessage.sender_id == user_id) | (models.UserMessage.receiver_id == user_id)
+    ).all()
+    return messages
+
+# Смена пароля пользователя (админ)
+@app.post("/admin/users/{user_id}/change-password")
+def change_user_password(user_id: int, request: dict, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    if user.is_admin:
+        raise HTTPException(status_code=403, detail="Cannot change admin password")
+    
+    new_password = request.get("new_password")
+    if not new_password or len(new_password) < 4:
+        raise HTTPException(status_code=400, detail="Password too short")
+    
+    user.hashed_password = auth.get_password_hash(new_password)
+    db.commit()
+    return {"msg": "Password changed"}
+
+# Статистика пользователя (админ)
+@app.get("/admin/users/{user_id}/stats")
+def get_user_stats(user_id: int, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    investments = db.query(models.Investment).filter(models.Investment.user_id == user_id).all()
+    
+    total_income = sum(t.amount for t in transactions if t.type == "income")
+    total_expense = sum(t.amount for t in transactions if t.type == "expense")
+    total_invested = sum(i.quantity * i.purchase_price for i in investments)
+    current_value = sum(i.quantity * i.current_price for i in investments)
+    
+    return {
+        "total_income": total_income,
+        "total_expense": total_expense,
+        "total_invested": total_invested,
+        "current_value": current_value
+    }
+
+# Экспорт данных пользователя (админ)
+@app.get("/admin/users/{user_id}/export")
+def export_user_data(user_id: int, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    transactions = db.query(models.Transaction).filter(models.Transaction.user_id == user_id).all()
+    categories = db.query(models.Category).filter(models.Category.user_id == user_id).all()
+    investments = db.query(models.Investment).filter(models.Investment.user_id == user_id).all()
+    
+    import io
+    output = io.StringIO()
+    output.write(f"Пользователь: {user.username}\n")
+    output.write(f"Email: {user.email or '—'}\n")
+    output.write(f"Дата регистрации: {user.created_at}\n\n")
+    
+    output.write("ТРАНЗАКЦИИ:\n")
+    output.write("Дата,Тип,Категория,Сумма,Описание\n")
+    for t in transactions:
+        cat = next((c.name for c in categories if c.id == t.category_id), "—")
+        output.write(f"{t.date},{t.type},{cat},{t.amount},{t.description}\n")
+    
+    output.write("\nИНВЕСТИЦИИ:\n")
+    output.write("Название,Тип,Количество,Цена покупки,Текущая цена,Прибыль\n")
+    for i in investments:
+        output.write(f"{i.name},{i.type},{i.quantity},{i.purchase_price},{i.current_price},{i.quantity*(i.current_price-i.purchase_price)}\n")
+    
+    return Response(content=output.getvalue(), media_type="text/csv")
+
+# Отправка уведомления пользователю (админ)
+@app.post("/admin/users/{user_id}/notify")
+def send_notification(user_id: int, request: dict, db: Session = Depends(database.get_db), admin: models.User = Depends(get_current_admin)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    subject = request.get("subject", "Уведомление от администратора")
+    message = request.get("message", "")
+    
+    # Создаем сообщение от админа к пользователю
+    db_msg = models.UserMessage(
+        sender_id=admin.id,
+        receiver_id=user_id,
+        subject=f"[АДМИН] {subject}",
+        message=message
+    )
+    db.add(db_msg)
+    db.commit()
+    
+    return {"msg": "Notification sent"}

@@ -1,11 +1,12 @@
-﻿using System;
+﻿using FinUchetClient.Models;
+using FinUchetClient.Services;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
-using FinUchetClient.Models;
-using FinUchetClient.Services;
 
 namespace FinUchetClient.Views
 {
@@ -17,6 +18,7 @@ namespace FinUchetClient.Views
         public InvestmentsView()
         {
             InitializeComponent();
+           
             _apiService = new ApiService();
             Loaded += async (s, e) => await LoadData();
         }
@@ -34,22 +36,15 @@ namespace FinUchetClient.Views
                 if (_investments == null)
                     _investments = new List<InvestmentModel>();
 
-                UpdateStatistics();
-
-                InvestmentsGrid.ItemsSource = _investments.Select(i => new
+                // Отладка: выводим в консоль что пришло с сервера
+                System.Diagnostics.Debug.WriteLine($"=== ЗАГРУЖЕНО ИНВЕСТИЦИЙ: {_investments.Count} ===");
+                foreach (var inv in _investments)
                 {
-                    i.Id,
-                    i.Name,
-                    i.Type,
-                    TypeDisplay = i.TypeDisplay,
-                    i.Quantity,
-                    i.PurchasePrice,
-                    i.CurrentPrice,
-                    TotalInvested = i.TotalInvested,
-                    CurrentValue = i.CurrentValue,
-                    ProfitLoss = i.ProfitLoss,
-                    ProfitLossPercent = i.ProfitLossPercent
-                }).ToList();
+                    System.Diagnostics.Debug.WriteLine($"ID: {inv.Id}, Name: {inv.Name}, Quantity: {inv.Quantity}, PurchasePrice: {inv.PurchasePrice}, CurrentPrice: {inv.CurrentPrice}");
+                }
+
+                UpdateStatistics();
+                UpdateGrid();
             }
             catch (Exception ex)
             {
@@ -59,10 +54,29 @@ namespace FinUchetClient.Views
 
         private void UpdateStatistics()
         {
-            if (_investments == null) return;
+            if (_investments == null || _investments.Count == 0)
+            {
+                TotalInvestedText.Text = "0 ₽";
+                CurrentValueText.Text = "0 ₽";
+                ProfitLossText.Text = "0 ₽";
+                ProfitPercentText.Text = "0%";
+                return;
+            }
 
-            double totalInvested = _investments.Sum(i => i.TotalInvested);
-            double currentValue = _investments.Sum(i => i.CurrentValue);
+            double totalInvested = 0;
+            double currentValue = 0;
+
+            foreach (var inv in _investments)
+            {
+                double invested = inv.Quantity * inv.PurchasePrice;
+                double current = inv.Quantity * inv.CurrentPrice;
+
+                totalInvested += invested;
+                currentValue += current;
+
+                System.Diagnostics.Debug.WriteLine($"Инвестиция {inv.Name}: вложено={invested}, тек.стоимость={current}");
+            }
+
             double profitLoss = currentValue - totalInvested;
             double profitPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
 
@@ -85,31 +99,64 @@ namespace FinUchetClient.Views
             }
         }
 
+        private void UpdateGrid()
+        {
+            if (_investments == null) return;
+
+            var displayList = _investments.Select(i => new
+            {
+                i.Id,
+                i.Name,
+                Тип = i.TypeDisplay,
+                Количество = i.Quantity,
+                Цена_покупки = $"{i.PurchasePrice:N2} ₽",
+                Текущая_цена = $"{i.CurrentPrice:N2} ₽",
+                Вложено = $"{i.TotalInvested:N2} ₽",
+                Текущая_стоимость = $"{i.CurrentValue:N2} ₽",
+                Прибыль = i.ProfitLoss >= 0 ? $"+{i.ProfitLoss:N2} ₽" : $"{i.ProfitLoss:N2} ₽",
+                Доходность = i.ProfitLossPercent >= 0 ? $"+{i.ProfitLossPercent:F1}%" : $"{i.ProfitLossPercent:F1}%"
+            }).ToList();
+
+            InvestmentsGrid.ItemsSource = displayList;
+        }
+
         private async void AddInvestment_Click(object sender, RoutedEventArgs e)
         {
             try
             {
+                // Проверка названия
                 if (string.IsNullOrWhiteSpace(InvestmentNameBox.Text))
                 {
-                    MessageBox.Show("Введите название инвестиции");
+                    MessageBox.Show("Введите название инвестиции (например: 'Сбербанк', 'Bitcoin')",
+                        "Подсказка", MessageBoxButton.OK, MessageBoxImage.Information);
+                    InvestmentNameBox.Focus();
                     return;
                 }
 
+                // Проверка количества
                 if (!double.TryParse(QuantityBox.Text, out double quantity) || quantity <= 0)
                 {
-                    MessageBox.Show("Введите корректное количество");
+                    MessageBox.Show("Введите корректное количество (например: 10, 1.5)",
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    QuantityBox.Focus();
                     return;
                 }
 
+                // Проверка цены покупки
                 if (!double.TryParse(PurchasePriceBox.Text, out double purchasePrice) || purchasePrice <= 0)
                 {
-                    MessageBox.Show("Введите корректную цену покупки");
+                    MessageBox.Show("Введите корректную цену покупки (например: 150.50)",
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    PurchasePriceBox.Focus();
                     return;
                 }
 
+                // Проверка текущей цены
                 if (!double.TryParse(CurrentPriceBox.Text, out double currentPrice) || currentPrice <= 0)
                 {
-                    MessageBox.Show("Введите корректную текущую цену");
+                    MessageBox.Show("Введите корректную текущую цену (например: 180.00)",
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    CurrentPriceBox.Focus();
                     return;
                 }
 
@@ -121,93 +168,73 @@ namespace FinUchetClient.Views
                     "₿ Криптовалюта" => "crypto",
                     "🏠 Недвижимость" => "realty",
                     "🏦 Депозит" => "deposit",
-                    _ => "stock"
+                    _ => "other"
                 };
+
+                // Показываем предварительный расчет
+                double totalInvested = quantity * purchasePrice;
+                double currentValue = quantity * currentPrice;
+                double profitLoss = currentValue - totalInvested;
+                double profitPercent = totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+
+                var confirmResult = MessageBox.Show(
+                    $"📊 ПРЕДВАРИТЕЛЬНЫЙ РАСЧЕТ:\n\n" +
+                    $"💰 Вложено: {totalInvested:N2} ₽\n" +
+                    $"📈 Текущая стоимость: {currentValue:N2} ₽\n" +
+                    $"{(profitLoss >= 0 ? "✅" : "❌")} Прибыль: {(profitLoss >= 0 ? "+" : "")}{profitLoss:N2} ₽\n" +
+                    $"{(profitLoss >= 0 ? "📈" : "📉")} Доходность: {(profitPercent >= 0 ? "+" : "")}{profitPercent:F1}%\n\n" +
+                    $"Добавить инвестицию '{InvestmentNameBox.Text}'?",
+                    "Подтверждение", MessageBoxButton.YesNo,
+                    profitLoss >= 0 ? MessageBoxImage.Information : MessageBoxImage.Warning);
+
+                if (confirmResult != MessageBoxResult.Yes)
+                    return;
 
                 var investment = new InvestmentModel
                 {
-                    Name = InvestmentNameBox.Text,
+                    Name = InvestmentNameBox.Text.Trim(),
                     Type = typeCode,
                     Quantity = quantity,
                     PurchasePrice = purchasePrice,
                     CurrentPrice = currentPrice,
                     PurchaseDate = DateTime.Now,
                     Currency = "RUB",
-                    Amount = quantity * purchasePrice
+                    Amount = totalInvested
                 };
+
+                System.Diagnostics.Debug.WriteLine($"Добавляем инвестицию: Name={investment.Name}, Quantity={investment.Quantity}, PurchasePrice={investment.PurchasePrice}, CurrentPrice={investment.CurrentPrice}");
 
                 var success = await _apiService.AddInvestmentAsync(investment);
                 if (success)
                 {
                     await LoadData();
-                    MessageBox.Show("Инвестиция добавлена!");
+                    MessageBox.Show($"✅ Инвестиция '{investment.Name}' успешно добавлена!",
+                        "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
 
+                    // Очищаем поля
                     InvestmentNameBox.Text = "";
                     QuantityBox.Text = "1";
                     PurchasePriceBox.Text = "0";
                     CurrentPriceBox.Text = "0";
+                    InvestmentNameBox.Focus();
                 }
                 else
                 {
-                    MessageBox.Show("Ошибка добавления инвестиции");
+                    MessageBox.Show("❌ Ошибка добавления инвестиции. Попробуйте позже.",
+                        "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show($"Ошибка: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AddInvestment error: {ex.Message}");
             }
         }
 
-        private async void EditInvestment_Click(object sender, RoutedEventArgs e)
+        // Обновить статистику вручную
+        private async void RefreshStats_Click(object sender, RoutedEventArgs e)
         {
-            try
-            {
-                var button = sender as Button;
-                dynamic item = button.Tag;
-                int id = item.Id;
-
-                var investment = _investments.FirstOrDefault(i => i.Id == id);
-                if (investment != null)
-                {
-                    var dialog = new EditInvestmentWindow(investment);
-                    if (dialog.ShowDialog() == true)
-                    {
-                        var success = await _apiService.UpdateInvestmentAsync(dialog.UpdatedInvestment);
-                        if (success)
-                            await LoadData();
-                        else
-                            MessageBox.Show("Ошибка обновления");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
-        }
-
-        private async void DeleteInvestment_Click(object sender, RoutedEventArgs e)
-        {
-            try
-            {
-                var button = sender as Button;
-                dynamic item = button.Tag;
-                int id = item.Id;
-
-                var result = MessageBox.Show("Удалить инвестицию?", "Подтверждение", MessageBoxButton.YesNo);
-                if (result == MessageBoxResult.Yes)
-                {
-                    var success = await _apiService.DeleteInvestmentAsync(id);
-                    if (success)
-                        await LoadData();
-                    else
-                        MessageBox.Show("Ошибка удаления");
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show($"Ошибка: {ex.Message}");
-            }
+            await LoadData();
         }
     }
 }

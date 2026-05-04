@@ -87,7 +87,7 @@ namespace FinUchetClient.Views
             CountTextBlock.Text = $"📊 Всего операций: {filteredList.Count}";
         }
 
-        // Добавление транзакции
+        // Добавление транзакции (тип берется из выбранной категории)
         private async void AddTransaction_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -102,13 +102,13 @@ namespace FinUchetClient.Views
 
                 if (!double.TryParse(NewAmountBox.Text, out double amount) || amount <= 0)
                 {
-                    MessageBox.Show("Введите корректную сумму");
+                    MessageBox.Show("Введите корректную сумму", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
                 if (NewCategoryBox.SelectedItem == null)
                 {
-                    MessageBox.Show("Выберите категорию");
+                    MessageBox.Show("Выберите категорию", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
                     return;
                 }
 
@@ -120,13 +120,20 @@ namespace FinUchetClient.Views
                 }
 
                 DateTime selectedDate = NewDatePicker.SelectedDate ?? DateTime.Now;
-                string selectedType = ((ComboBoxItem)NewTypeBox.SelectedItem).Content.ToString();
-                string transactionType = selectedType.Contains("Доход") ? "income" : "expense";
+
+                // Тип операции определяется из выбранной категории!
+                string transactionType = selectedCategory.Type; // "income" или "expense"
+
+                if (string.IsNullOrEmpty(transactionType))
+                {
+                    MessageBox.Show("У выбранной категории не указан тип", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+                    return;
+                }
 
                 var transaction = new TransactionModel
                 {
                     Amount = amount,
-                    Description = NewDescriptionBox.Text,
+                    Description = string.IsNullOrWhiteSpace(NewDescriptionBox.Text) ? "Без описания" : NewDescriptionBox.Text,
                     Type = transactionType,
                     CategoryId = selectedCategory.Id,
                     CategoryName = selectedCategory.Name,
@@ -137,14 +144,14 @@ namespace FinUchetClient.Views
                 if (success)
                 {
                     await LoadData();
-                    MessageBox.Show("Операция добавлена!");
+                    MessageBox.Show("Операция добавлена!", "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                     NewAmountBox.Text = "0";
                     NewDescriptionBox.Text = "";
                     NewDatePicker.SelectedDate = DateTime.Now;
                 }
                 else
                 {
-                    MessageBox.Show("Ошибка добавления операции");
+                    MessageBox.Show("Ошибка добавления операции", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             catch (Exception ex)
@@ -153,8 +160,7 @@ namespace FinUchetClient.Views
             }
         }
 
-        // РЕДАКТИРОВАНИЕ транзакции
-        // РЕДАКТИРОВАНИЕ транзакции (полное)
+        // Редактирование транзакции
         private async void EditTransaction_Click(object sender, RoutedEventArgs e)
         {
             var selected = TransactionsGrid.SelectedItem;
@@ -164,14 +170,12 @@ namespace FinUchetClient.Views
                 return;
             }
 
-            // Получаем ID выбранной транзакции
             var prop = selected.GetType().GetProperty("Id");
             int id = (int)prop.GetValue(selected);
             var transaction = _allTransactions.FirstOrDefault(t => t.Id == id);
 
             if (transaction != null)
             {
-                // Открываем окно редактирования
                 var editWindow = new EditTransactionWindow(transaction, _categories);
                 if (editWindow.ShowDialog() == true)
                 {
@@ -191,7 +195,7 @@ namespace FinUchetClient.Views
             }
         }
 
-        // УДАЛЕНИЕ транзакции
+        // Удаление транзакции
         private async void DeleteTransaction_Click(object sender, RoutedEventArgs e)
         {
             var selected = TransactionsGrid.SelectedItem;

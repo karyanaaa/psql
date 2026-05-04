@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using FinUchetClient.Services;
@@ -8,11 +9,15 @@ namespace FinUchetClient.Views
     public partial class UsefulView : UserControl
     {
         private CurrencyService _currencyService;
+        private readonly string _checklistPath;
 
         public UsefulView()
         {
             InitializeComponent();
             _currencyService = new CurrencyService();
+            _checklistPath = Path.Combine(
+                Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                "FinUchetClient", "checklist.json");
 
             // Устанавливаем валюты по умолчанию
             if (FromCurrencyBox.Items.Count > 0)
@@ -20,8 +25,74 @@ namespace FinUchetClient.Views
             if (ToCurrencyBox.Items.Count > 0)
                 ToCurrencyBox.SelectedIndex = 1;
 
+            // Загружаем сохраненное состояние чек-листа
+            LoadChecklistState();
+
             // Обновляем курсы в фоне
             _ = UpdateRatesAsync();
+        }
+
+        private void LoadChecklistState()
+        {
+            try
+            {
+                if (File.Exists(_checklistPath))
+                {
+                    var json = File.ReadAllText(_checklistPath);
+                    var states = System.Text.Json.JsonSerializer.Deserialize<bool[]>(json);
+
+                    if (states != null && states.Length >= 8)
+                    {
+                        CheckBox1.IsChecked = states[0];
+                        CheckBox2.IsChecked = states[1];
+                        CheckBox3.IsChecked = states[2];
+                        CheckBox4.IsChecked = states[3];
+                        CheckBox5.IsChecked = states[4];
+                        CheckBox6.IsChecked = states[5];
+                        CheckBox7.IsChecked = states[6];
+                        CheckBox8.IsChecked = states[7];
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"LoadChecklist error: {ex.Message}");
+            }
+        }
+
+        private void SaveChecklistState()
+        {
+            try
+            {
+                var states = new bool[]
+                {
+                    CheckBox1.IsChecked ?? false,
+                    CheckBox2.IsChecked ?? false,
+                    CheckBox3.IsChecked ?? false,
+                    CheckBox4.IsChecked ?? false,
+                    CheckBox5.IsChecked ?? false,
+                    CheckBox6.IsChecked ?? false,
+                    CheckBox7.IsChecked ?? false,
+                    CheckBox8.IsChecked ?? false
+                };
+
+                var directory = Path.GetDirectoryName(_checklistPath);
+                if (!Directory.Exists(directory))
+                    Directory.CreateDirectory(directory);
+
+                var json = System.Text.Json.JsonSerializer.Serialize(states);
+                File.WriteAllText(_checklistPath, json);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"SaveChecklist error: {ex.Message}");
+            }
+        }
+
+        // Подписываемся на событие изменения состояния чек-боксов
+        private void CheckBox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            SaveChecklistState();
         }
 
         private void CalculateSavings_Click(object sender, RoutedEventArgs e)
@@ -70,7 +141,6 @@ namespace FinUchetClient.Views
 
         private async void Currency_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            // Автоматически конвертируем при смене валюты
             ConvertCurrency_Click(sender, null);
         }
 
@@ -106,7 +176,6 @@ namespace FinUchetClient.Views
                 }
                 else
                 {
-                    // Конвертируем через рубль
                     double inRub = amount * fromCurrency.RateToRub;
                     result = inRub / toCurrency.RateToRub;
                     conversionText = $"{amount:N2} {fromCurrency.Symbol} → {result:N2} {toCurrency.Symbol}";
@@ -138,7 +207,6 @@ namespace FinUchetClient.Views
                 MessageBox.Show("Курсы валют успешно обновлены!", "Успех",
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
-                // Пересчитываем результат
                 ConvertCurrency_Click(sender, null);
             }
             catch (Exception ex)

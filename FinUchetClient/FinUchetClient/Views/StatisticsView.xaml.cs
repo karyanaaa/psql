@@ -241,7 +241,7 @@ namespace FinUchetClient.Views
             await LoadData();
         }
 
-        // ЭКСПОРТ В CSV С ДИАЛОГОМ ВЫБОРА ФАЙЛА
+        // ЭКСПОРТ В CSV
         private async void ExportToCsv_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -258,7 +258,6 @@ namespace FinUchetClient.Views
                     return;
                 }
 
-                // Диалог сохранения файла
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Title = "Сохранить отчет в CSV",
@@ -272,17 +271,15 @@ namespace FinUchetClient.Views
                 {
                     string filePath = dialog.FileName;
 
-                    using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+                    using (var writer = new System.IO.StreamWriter(filePath, false, new System.Text.UTF8Encoding(false)))
                     {
-                        // Заголовки
                         writer.WriteLine("Дата;Тип;Категория;Сумма;Описание");
 
-                        // Данные
                         foreach (var t in filtered.OrderByDescending(x => x.Date))
                         {
                             string type = t.Type == "income" ? "Доход" : "Расход";
                             string category = _categories?.FirstOrDefault(c => c.Id == t.CategoryId)?.Name ?? "Без категории";
-                            writer.WriteLine($"{t.Date:dd.MM.yyyy};{type};{category};{t.Amount:F2};{t.Description}");
+                            writer.WriteLine($"{t.Date:dd.MM.yyyy};{type};{category};{t.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)};{t.Description}");
                         }
                     }
 
@@ -292,12 +289,11 @@ namespace FinUchetClient.Views
             }
             catch (Exception ex)
             {
-                MessageBox.Show($"Ошибка экспорта: {ex.Message}", "Ошибка",
-                    MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show($"Ошибка экспорта: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
 
-        // ЭКСПОРТ В EXCEL (CSV формат с диалогом)
+        // ЭКСПОРТ В EXCEL
         private async void ExportToExcel_Click(object sender, RoutedEventArgs e)
         {
             try
@@ -314,11 +310,10 @@ namespace FinUchetClient.Views
                     return;
                 }
 
-                // Диалог сохранения файла
                 var dialog = new Microsoft.Win32.SaveFileDialog
                 {
                     Title = "Сохранить отчет в Excel",
-                    Filter = "Excel файлы (*.xlsx)|*.xlsx|CSV файлы (*.csv)|*.csv|Все файлы (*.*)|*.*",
+                    Filter = "Excel файлы (*.xlsx)|*.xlsx|CSV файлы (*.csv)|*.csv",
                     DefaultExt = "xlsx",
                     FileName = $"Финансовый_отчет_{start:yyyyMMdd}_{end:yyyyMMdd}.xlsx",
                     InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
@@ -331,10 +326,10 @@ namespace FinUchetClient.Views
 
                     if (extension == ".xlsx")
                     {
-                        // Для Excel используем CSV формат с разделителем (Excel откроет)
+                        // Для Excel используем CSV формат
                         string csvPath = System.IO.Path.ChangeExtension(filePath, ".csv");
 
-                        using (var writer = new System.IO.StreamWriter(csvPath, false, System.Text.Encoding.UTF8))
+                        using (var writer = new System.IO.StreamWriter(csvPath, false, new System.Text.UTF8Encoding(false)))
                         {
                             writer.WriteLine("Дата;Тип;Категория;Сумма;Описание");
 
@@ -342,18 +337,16 @@ namespace FinUchetClient.Views
                             {
                                 string type = t.Type == "income" ? "Доход" : "Расход";
                                 string category = _categories?.FirstOrDefault(c => c.Id == t.CategoryId)?.Name ?? "Без категории";
-                                writer.WriteLine($"{t.Date:dd.MM.yyyy};{type};{category};{t.Amount:F2};{t.Description}");
+                                writer.WriteLine($"{t.Date:dd.MM.yyyy};{type};{category};{t.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)};{t.Description}");
                             }
                         }
 
-                        MessageBox.Show($"Отчет сохранен как CSV файл (можно открыть в Excel):\n{csvPath}\n\n" +
-                            "Совет: Откройте Excel → Данные → Из текстового файла → выберите разделитель ';'",
+                        MessageBox.Show($"Отчет сохранен как CSV файл:\n{csvPath}\n\nСовет: Откройте Excel → Данные → Из текстового файла → выберите разделитель ';'",
                             "Успех", MessageBoxButton.OK, MessageBoxImage.Information);
                     }
                     else
                     {
-                        // Обычный CSV
-                        using (var writer = new System.IO.StreamWriter(filePath, false, System.Text.Encoding.UTF8))
+                        using (var writer = new System.IO.StreamWriter(filePath, false, new System.Text.UTF8Encoding(false)))
                         {
                             writer.WriteLine("Дата;Тип;Категория;Сумма;Описание");
 
@@ -361,7 +354,7 @@ namespace FinUchetClient.Views
                             {
                                 string type = t.Type == "income" ? "Доход" : "Расход";
                                 string category = _categories?.FirstOrDefault(c => c.Id == t.CategoryId)?.Name ?? "Без категории";
-                                writer.WriteLine($"{t.Date:dd.MM.yyyy};{type};{category};{t.Amount:F2};{t.Description}");
+                                writer.WriteLine($"{t.Date:dd.MM.yyyy};{type};{category};{t.Amount.ToString(System.Globalization.CultureInfo.InvariantCulture)};{t.Description}");
                             }
                         }
 

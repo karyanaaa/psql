@@ -33,4 +33,5 @@ packages/
 
 # Результаты сборки
 **/bin/
-**/obj/
+**/obj/__pycache__/ 
+*.pyc 

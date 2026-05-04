@@ -16,6 +16,11 @@ namespace FinUchetClient.Views
         public AddTransactionWindow(string type)
         {
             InitializeComponent();
+            this.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    this.DragMove();
+            };
             _transactionType = type;
 
             // Устанавливаем заголовок

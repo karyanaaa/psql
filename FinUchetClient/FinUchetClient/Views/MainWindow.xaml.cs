@@ -1,6 +1,7 @@
-﻿using System.Windows;
+﻿using FinUchetClient.Services;
+using System.Windows;
 using System.Windows.Controls;
-using FinUchetClient.Services;
+using System.Windows.Input;
 
 namespace FinUchetClient.Views
 {
@@ -16,36 +17,43 @@ namespace FinUchetClient.Views
             _apiService = apiService;
             _authService = authService;
             _isAdmin = isAdmin;
-
+            this.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    this.DragMove();
+            };
+            // Загружаем сохраненную тему
             ThemeManager.LoadThemePreference();
 
-            if (ThemeToggleButton != null)
-            {
-                ThemeToggleButton.Content = ThemeManager.IsDarkTheme ? "☀️ Светлая тема" : "🌙 Тёмная тема";
-            }
+            // Обновляем текст кнопки в зависимости от текущей темы
+            UpdateThemeButtonText();
 
             UserNameText.Text = authService.CurrentUsername ?? "Пользователь";
 
-            // Если админ - показываем только админ панель
             if (_isAdmin)
             {
                 ShowAdminOnlyMode();
             }
         }
 
+        private void UpdateThemeButtonText()
+        {
+            if (ThemeToggleButton != null)
+            {
+                ThemeToggleButton.Content = ThemeManager.IsDarkTheme ? "☀️ Светлая тема" : "🌙 Тёмная тема";
+            }
+        }
+
         private void ShowAdminOnlyMode()
         {
-            // Скрываем все обычные кнопки
             var sidebarStack = SidebarPanel.Child as StackPanel;
             if (sidebarStack != null)
             {
-                // Проходим по всем дочерним элементам и скрываем обычные кнопки
                 foreach (var child in sidebarStack.Children)
                 {
                     if (child is Button btn)
                     {
                         string content = btn.Content?.ToString() ?? "";
-                        // Скрываем обычные кнопки, оставляем только Выход и Тему
                         if (content != "🚪 Выход" &&
                             content != "🌙 Тёмная тема" &&
                             content != "☀️ Светлая тема" &&
@@ -57,7 +65,6 @@ namespace FinUchetClient.Views
                 }
             }
 
-            // Показываем админ панель
             MainContentArea.Content = new AdminView();
         }
 
@@ -127,7 +134,66 @@ namespace FinUchetClient.Views
         {
             bool isDark = !ThemeManager.IsDarkTheme;
             ThemeManager.ApplyTheme(isDark);
-            ThemeToggleButton.Content = isDark ? "☀️ Светлая тема" : "🌙 Тёмная тема";
+            UpdateThemeButtonText();
+
+            // Обновляем текущее содержимое, чтобы применить тему к дочерним контролам
+            var currentContent = MainContentArea.Content;
+            if (currentContent != null)
+            {
+                MainContentArea.Content = null;
+                MainContentArea.Content = currentContent;
+            }
+        }
+
+        private void ShowRules_Click(object sender, RoutedEventArgs e)
+        {
+            var rulesWindow = new Window
+            {
+                Title = "Правила использования",
+                Width = 500,
+                Height = 400,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                Owner = this,
+                Content = new ScrollViewer
+                {
+                    Content = new TextBlock
+                    {
+                        Text = @"ПРАВИЛА ИСПОЛЬЗОВАНИЯ СЕРВИСА ФинУчет
+
+1. Общие положения
+   - Используйте сервис только для личного финансового учета
+   - Запрещено использовать сервис для незаконных целей
+
+2. Что запрещено:
+   - Оскорбления и угрозы в адрес администратора
+   - Создание множественных аккаунтов
+   - Попытки взлома или несанкционированного доступа
+   - Распространение спама и рекламы
+   - Нарушение законодательства РФ
+
+3. Блокировка аккаунта:
+   - За первое нарушение - предупреждение
+   - При повторных нарушениях - временная блокировка (1-168 часов)
+   - За грубые нарушения - перманентная блокировка
+
+4. Удаление аккаунта:
+   - По собственному желанию (отправьте запрос администратору)
+   - После перманентной блокировки
+   - По требованию уполномоченных органов
+
+5. Администратор имеет право:
+   - Блокировать пользователей при нарушении правил
+   - Удалять неактивные аккаунты (более 6 месяцев без входа)
+   - Изменять правила с уведомлением пользователей
+
+Последнее обновление: 26.04.2026",
+                        TextWrapping = TextWrapping.Wrap,
+                        Margin = new Thickness(20),
+                        FontSize = 14
+                    }
+                }
+            };
+            rulesWindow.ShowDialog();
         }
     }
 }

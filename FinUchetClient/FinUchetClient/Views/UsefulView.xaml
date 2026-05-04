@@ -5,18 +5,17 @@
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <StackPanel Margin="20">
-
             <!-- Заголовок -->
             <TextBlock Text="📚 ФИНАНСОВАЯ ГРАМОТНОСТЬ" FontSize="28" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,5"/>
             <TextBlock Text="Советы, инструменты и вдохновение для управления деньгами" FontSize="14" Foreground="#7F8C8D" Margin="0,0,0,20"/>
 
-            <!-- ========== РАЗДЕЛ 1: КАЛЬКУЛЯТОР НАКОПЛЕНИЙ ========== -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20">
+            <!-- Калькулятор накоплений -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="💰 КАЛЬКУЛЯТОР НАКОПЛЕНИЙ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
                     <TextBlock Text="Сумма в месяц:" Foreground="#666" Margin="0,0,0,5"/>
-                    <TextBox x:Name="MonthlyAmountBox" Text="5000" FontSize="14" Padding="10" Margin="0,0,0,10"/>
+                    <TextBox x:Name="MonthlyAmountBox" Text="5000" FontSize="14" Padding="10" Margin="0,0,0,10" Background="White" Foreground="#333" BorderBrush="#DDD" BorderThickness="1"/>
 
                     <TextBlock Text="Период:" Foreground="#666" Margin="0,0,0,5"/>
                     <Grid Margin="0,0,0,10">
@@ -25,8 +24,8 @@
                             <ColumnDefinition Width="Auto"/>
                             <ColumnDefinition Width="*"/>
                         </Grid.ColumnDefinitions>
-                        <TextBox x:Name="PeriodValueBox" Grid.Column="0" Text="12" FontSize="14" Padding="10" TextAlignment="Center"/>
-                        <ComboBox x:Name="PeriodUnitBox" Grid.Column="2" Width="100" Height="35" FontSize="14" SelectedIndex="1" Margin="10,0,0,0">
+                        <TextBox x:Name="PeriodValueBox" Grid.Column="0" Text="12" FontSize="14" Padding="10" TextAlignment="Center" Background="White" Foreground="#333" BorderBrush="#DDD" BorderThickness="1"/>
+                        <ComboBox x:Name="PeriodUnitBox" Grid.Column="2" Width="100" Height="35" FontSize="14" SelectedIndex="1" Margin="10,0,0,0" Background="White" Foreground="#333">
                             <ComboBoxItem Content="Дней"/>
                             <ComboBoxItem Content="Месяцев"/>
                             <ComboBoxItem Content="Лет"/>
@@ -39,12 +38,12 @@
                     <TextBlock x:Name="SavingsDetail" FontSize="13" Foreground="#7F8C8D" TextWrapping="Wrap" Margin="0,5,0,0" Visibility="Collapsed"/>
                 </StackPanel>
             </Border>
-            <!-- ========== РАЗДЕЛ 2: КОНВЕРТЕР ВАЛЮТ ========== -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20">
+
+            <!-- Конвертер валют -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="💱 КОНВЕРТЕР ВАЛЮТ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
-                    <!-- Выбор валют для перевода -->
                     <Grid Margin="0,0,0,15">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*"/>
@@ -54,7 +53,7 @@
 
                         <StackPanel Grid.Column="0">
                             <TextBlock Text="Из валюты:" Foreground="#666" FontSize="12" Margin="0,0,0,5"/>
-                            <ComboBox x:Name="FromCurrencyBox" Height="35" FontSize="14" SelectionChanged="Currency_SelectionChanged">
+                            <ComboBox x:Name="FromCurrencyBox" Height="35" FontSize="14" Background="White" Foreground="#333" SelectionChanged="Currency_SelectionChanged">
                                 <ComboBoxItem Content="🇷🇺 RUB (Рубль)" Tag="RUB"/>
                                 <ComboBoxItem Content="🇺🇸 USD (Доллар)" Tag="USD"/>
                                 <ComboBoxItem Content="🇪🇺 EUR (Евро)" Tag="EUR"/>
@@ -67,12 +66,12 @@
                         </StackPanel>
 
                         <TextBlock Grid.Column="1" Text="→" FontSize="24" FontWeight="Bold" 
-                       VerticalAlignment="Center" Margin="20,0,20,0"
-                       Foreground="#3498DB"/>
+                                   VerticalAlignment="Center" Margin="20,0,20,0"
+                                   Foreground="#3498DB"/>
 
                         <StackPanel Grid.Column="2">
                             <TextBlock Text="В валюту:" Foreground="#666" FontSize="12" Margin="0,0,0,5"/>
-                            <ComboBox x:Name="ToCurrencyBox" Height="35" FontSize="14" SelectionChanged="Currency_SelectionChanged">
+                            <ComboBox x:Name="ToCurrencyBox" Height="35" FontSize="14" Background="White" Foreground="#333" SelectionChanged="Currency_SelectionChanged">
                                 <ComboBoxItem Content="🇷🇺 RUB (Рубль)" Tag="RUB"/>
                                 <ComboBoxItem Content="🇺🇸 USD (Доллар)" Tag="USD"/>
                                 <ComboBoxItem Content="🇪🇺 EUR (Евро)" Tag="EUR"/>
@@ -85,15 +84,11 @@
                         </StackPanel>
                     </Grid>
 
-                    <!-- Ввод суммы -->
                     <TextBlock Text="Сумма:" Foreground="#666" Margin="0,0,0,5"/>
-                    <TextBox x:Name="AmountToConvert" Text="1000" FontSize="14" Padding="10" Margin="0,0,0,10"/>
+                    <TextBox x:Name="AmountToConvert" Text="1000" FontSize="14" Padding="10" Margin="0,0,0,10" Background="White" Foreground="#333" BorderBrush="#DDD" BorderThickness="1"/>
 
-                    <!-- Кнопка конвертации -->
-                    <Button Content="🔄 Конвертировать" Background="#3498DB" Foreground="White" 
-                Padding="10" Click="ConvertCurrency_Click" Margin="0,0,0,10"/>
+                    <Button Content="🔄 Конвертировать" Background="#3498DB" Foreground="White" Padding="10" Click="ConvertCurrency_Click" Margin="0,0,0,10"/>
 
-                    <!-- Результат -->
                     <Border Background="#E8F8F5" Padding="15" CornerRadius="8" Margin="0,10,0,0">
                         <StackPanel>
                             <TextBlock Text="Результат:" FontWeight="Bold" Foreground="#27AE60" FontSize="14" Margin="0,0,0,5"/>
@@ -102,14 +97,12 @@
                         </StackPanel>
                     </Border>
 
-                    <!-- Кнопка обновления курсов -->
-                    <Button Content="🔄 Обновить курсы валют" Background="#95A5A6" Foreground="White" 
-                Padding="8" Margin="0,10,0,0" Click="UpdateRates_Click" FontSize="12"
-                ToolTip="Обновить актуальные курсы валют из интернета"/>
+                    <Button Content="🔄 Обновить курсы валют" Background="#95A5A6" Foreground="White" Padding="8" Margin="0,10,0,0" Click="UpdateRates_Click" FontSize="12"/>
                 </StackPanel>
             </Border>
-            <!-- ========== РАЗДЕЛ 2: ПРАВИЛА ЭКОНОМИИ ========== -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20">
+
+            <!-- Правила экономии -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="💡 7 ЗОЛОТЫХ ПРАВИЛ ЭКОНОМИИ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
@@ -150,8 +143,8 @@
                 </StackPanel>
             </Border>
 
-            <!-- ========== РАЗДЕЛ 3: СОВЕТЫ ПО ИНВЕСТИЦИЯМ ========== -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20">
+            <!-- Советы по инвестициям -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="📈 С ЧЕГО НАЧАТЬ ИНВЕСТИЦИИ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
@@ -182,8 +175,8 @@
                 </StackPanel>
             </Border>
 
-            <!-- ========== РАЗДЕЛ 4: КНИГИ ПО ФИНАНСАМ ========== -->
-            <Border Background="White" Padding="20" Margin="0,0,0,20">
+            <!-- Книги по финансам -->
+            <Border Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="📚 ТОП-5 КНИГ О ДЕНЬГАХ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
@@ -214,31 +207,30 @@
                 </StackPanel>
             </Border>
 
-            <!-- ========== РАЗДЕЛ 5: МОТИВАЦИЯ ========== -->
-            <Border Background="#2C3E50" Padding="25" Margin="0,0,0,20">
+            <!-- Мотивация -->
+            <Border Background="#2C3E50" Padding="25" Margin="0,0,0,20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="🌟 МОТИВАЦИЯ НА СЕГОДНЯ" FontSize="18" FontWeight="Bold" Foreground="#FFFFFF" Margin="0,0,0,10" TextAlignment="Center"/>
                     <TextBlock Text="«Не экономьте на том, что делает вас счастливым. Просто перестаньте тратить на то, что не имеет значения.»" Foreground="#FFFFFF" FontSize="14" FontStyle="Italic" TextWrapping="Wrap" TextAlignment="Center" Margin="0,0,0,10"/>
-                    <TextBlock Text="— Уоррен Баффет" Foreground="#95A5A6" FontSize="12" TextAlignment="Center"/>
+                    <TextBlock Text="— Уоррен Баффет" Foreground="#BDC3C7" FontSize="12" TextAlignment="Center"/>
                 </StackPanel>
             </Border>
 
-            <!-- ========== РАЗДЕЛ 6: ФИНАНСОВЫЙ ЧЕК-ЛИСТ ========== -->
-            <Border Background="White" Padding="20">
+            <!-- Финансовый чек-лист -->
+            <Border Background="White" Padding="20" CornerRadius="8">
                 <StackPanel>
                     <TextBlock Text="✅ ФИНАНСОВЫЙ ЧЕК-ЛИСТ" FontSize="18" FontWeight="Bold" Foreground="#2C3E50" Margin="0,0,0,15"/>
 
-                    <CheckBox Content="У меня есть финансовая подушка (3-6 месячных расходов)" Margin="0,5"/>
-                    <CheckBox Content="Я веду учет доходов и расходов" Margin="0,5"/>
-                    <CheckBox Content="Я откладываю 10-20% от каждого дохода" Margin="0,5"/>
-                    <CheckBox Content="У меня нет потребительских кредитов" Margin="0,5"/>
-                    <CheckBox Content="Я знаю свои финансовые цели на год вперед" Margin="0,5"/>
-                    <CheckBox Content="Я инвестирую хотя бы 1000 ₽ в месяц" Margin="0,5"/>
-                    <CheckBox Content="Я застрахован(а) (жизнь, здоровье, недвижимость)" Margin="0,5"/>
-                    <CheckBox Content="У меня есть завещание или план наследства" Margin="0,5"/>
+                    <CheckBox x:Name="CheckBox1" Content="У меня есть финансовая подушка (3-6 месячных расходов)" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox2" Content="Я веду учет доходов и расходов" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox3" Content="Я откладываю 10-20% от каждого дохода" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox4" Content="У меня нет потребительских кредитов" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox5" Content="Я знаю свои финансовые цели на год вперед" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox6" Content="Я инвестирую хотя бы 1000 ₽ в месяц" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox7" Content="Я застрахован(а) (жизнь, здоровье, недвижимость)" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
+                    <CheckBox x:Name="CheckBox8" Content="У меня есть завещание или план наследства" Margin="0,5" Foreground="#333" Checked="CheckBox_CheckedChanged" Unchecked="CheckBox_CheckedChanged"/>
                 </StackPanel>
             </Border>
-
         </StackPanel>
     </ScrollViewer>
 </UserControl>

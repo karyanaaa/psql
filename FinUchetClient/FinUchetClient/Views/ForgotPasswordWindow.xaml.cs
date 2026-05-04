@@ -1,6 +1,7 @@
-﻿using System;
+﻿using FinUchetClient.Services;
+using System;
 using System.Windows;
-using FinUchetClient.Services;
+using System.Windows.Input;
 
 namespace FinUchetClient.Views
 {
@@ -12,6 +13,11 @@ namespace FinUchetClient.Views
         public ForgotPasswordWindow()
         {
             InitializeComponent();
+            this.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    this.DragMove();
+            };
             _apiService = new ApiService();
         }
 

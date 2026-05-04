@@ -14,7 +14,7 @@
         </Grid.RowDefinitions>
 
         <!-- Заголовок -->
-        <Border Grid.Row="0" Background="White" Padding="20" Margin="0,0,0,20">
+        <Border Grid.Row="0" Background="White" Padding="20" Margin="0,0,0,20" CornerRadius="8">
             <StackPanel>
                 <TextBlock Text="📋 История операций" FontSize="24" FontWeight="Bold" Foreground="#2C3E50"/>
                 <TextBlock Text="Управляйте своими доходами и расходами" FontSize="13" Foreground="#7F8C8D" Margin="0,5,0,0"/>
@@ -22,24 +22,23 @@
         </Border>
 
         <!-- Панель добавления операции -->
-        <Border Grid.Row="1" Background="White" Padding="20" Margin="0,0,0,20" BorderBrush="#E0E0E0" BorderThickness="1">
-            <WrapPanel>
-                <TextBox x:Name="NewAmountBox" Width="120" Height="35" Margin="0,0,10,0" Text="0" FontSize="14"/>
-                <ComboBox x:Name="NewTypeBox" Width="100" Height="35" Margin="0,0,10,0" FontSize="14">
-                    <ComboBoxItem Content="💰 Доход"/>
-                    <ComboBoxItem Content="💸 Расход"/>
-                </ComboBox>
-                <TextBox x:Name="NewDescriptionBox" Width="180" Height="35" Margin="0,0,10,0" Text="Описание" FontSize="14"/>
-                <ComboBox x:Name="NewCategoryBox" Width="130" Height="35" Margin="0,0,10,0" DisplayMemberPath="Name" FontSize="14"/>
-                <DatePicker x:Name="NewDatePicker" Width="120" Height="35" Margin="0,0,10,0" FontSize="13"/>
-                <Button Content="➕ Добавить" Width="100" Height="35" Background="#2ECC71" Foreground="White" Click="AddTransaction_Click" FontSize="13"/>
-            </WrapPanel>
+        <Border Grid.Row="1" Background="White" Padding="20" Margin="0,0,0,20" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
+            <StackPanel>
+                <WrapPanel>
+                    <TextBox x:Name="NewAmountBox" Width="120" Height="35" Margin="0,0,10,0" Text="0" FontSize="14" ToolTip="Сумма"/>
+                    <ComboBox x:Name="NewCategoryBox" Width="180" Height="35" Margin="0,0,10,0" DisplayMemberPath="Name" FontSize="14" ToolTip="Выберите категорию (тип определится автоматически)"/>
+                    <TextBox x:Name="NewDescriptionBox" Width="200" Height="35" Margin="0,0,10,0" Text="Описание" FontSize="14"/>
+                    <DatePicker x:Name="NewDatePicker" Width="120" Height="35" Margin="0,0,10,0" FontSize="13"/>
+                    <Button Content="➕ Добавить" Width="110" Height="35" Background="#2ECC71" Foreground="White" Click="AddTransaction_Click" FontSize="13"/>
+                </WrapPanel>
+                <TextBlock Text="💡 Тип операции (доход/расход) определяется выбранной категорией" FontSize="11" Foreground="#7F8C8D" Margin="0,8,0,0"/>
+            </StackPanel>
         </Border>
 
         <!-- Панель фильтров -->
-        <Border Grid.Row="2" Background="White" Padding="15,10" Margin="0,0,0,20" BorderBrush="#E0E0E0" BorderThickness="1">
+        <Border Grid.Row="2" Background="White" Padding="15,10" Margin="0,0,0,20" BorderBrush="#E0E0E0" BorderThickness="1" CornerRadius="8">
             <WrapPanel>
-                <TextBox x:Name="SearchBox" Width="150" Height="30" Margin="0,0,10,0" TextChanged="SearchBox_TextChanged" ToolTip="Поиск" FontSize="13"/>
+                <TextBox x:Name="SearchBox" Width="150" Height="30" Margin="0,0,10,0" TextChanged="SearchBox_TextChanged" ToolTip="Поиск по описанию" FontSize="13"/>
                 <TextBlock Text="С:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#7F8C8D"/>
                 <DatePicker x:Name="DateFromPicker" Width="110" Height="30" Margin="0,0,10,0" SelectedDateChanged="DateFilter_Changed"/>
                 <TextBlock Text="По:" VerticalAlignment="Center" Margin="0,0,5,0" Foreground="#7F8C8D"/>

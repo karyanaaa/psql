@@ -22,12 +22,14 @@ namespace FinUchetClient.Services
             _client.DefaultRequestHeaders.Accept.Add(
                 new MediaTypeWithQualityHeaderValue("application/json"));
         }
+
         public class LoginResponse
         {
             public string access_token { get; set; } = string.Empty;
             public string token_type { get; set; } = string.Empty;
             public bool is_admin { get; set; }
         }
+
         public async Task<string> GetSecurityQuestionAsync(string username)
         {
             try
@@ -102,9 +104,9 @@ namespace FinUchetClient.Services
             {
                 var content = new FormUrlEncodedContent(new[]
                 {
-            new KeyValuePair<string, string>("username", username),
-            new KeyValuePair<string, string>("password", password)
-        });
+                    new KeyValuePair<string, string>("username", username),
+                    new KeyValuePair<string, string>("password", password)
+                });
 
                 var response = await _client.PostAsync($"{_baseUrl}/token", content);
                 var responseBody = await response.Content.ReadAsStringAsync();
@@ -116,7 +118,6 @@ namespace FinUchetClient.Services
                 }
                 else if ((int)response.StatusCode == 403)
                 {
-                    // Пользователь заблокирован - возвращаем сообщение из сервера
                     try
                     {
                         var errorResult = JsonConvert.DeserializeObject<Dictionary<string, string>>(responseBody);
@@ -288,16 +289,19 @@ namespace FinUchetClient.Services
             try
             {
                 var response = await _client.GetAsync($"{_baseUrl}/investments");
+                var responseBody = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"GetInvestments response: {responseBody}");
+
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonConvert.DeserializeObject<List<InvestmentModel>>(json);
+                    var investments = JsonConvert.DeserializeObject<List<InvestmentModel>>(responseBody);
+                    return investments ?? new List<InvestmentModel>();
                 }
                 return new List<InvestmentModel>();
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"GetInvestments error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"GetInvestments error: {ex.Message}");
                 return new List<InvestmentModel>();
             }
         }
@@ -306,7 +310,7 @@ namespace FinUchetClient.Services
         {
             try
             {
-                var json = JsonConvert.SerializeObject(new
+                var data = new
                 {
                     name = investment.Name,
                     type = investment.Type,
@@ -317,14 +321,16 @@ namespace FinUchetClient.Services
                     purchase_date = investment.PurchaseDate,
                     currency = investment.Currency,
                     notes = investment.Notes
-                });
+                };
+                var json = JsonConvert.SerializeObject(data);
+                System.Diagnostics.Debug.WriteLine($"Sending investment: {json}");
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _client.PostAsync($"{_baseUrl}/investments", content);
                 return response.IsSuccessStatusCode;
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"AddInvestment error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AddInvestment error: {ex.Message}");
                 return false;
             }
         }
@@ -442,11 +448,11 @@ namespace FinUchetClient.Services
             }
         }
 
-        public async Task<bool> BlockUserAsync(int userId, bool block)
+        public async Task<bool> BlockUserAsync(int userId, bool block, int hours = 0)
         {
             try
             {
-                var data = new { user_id = userId, block };
+                var data = new { user_id = userId, block = block, hours = hours };
                 var json = JsonConvert.SerializeObject(data);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await _client.PostAsync($"{_baseUrl}/admin/users/block", content);
@@ -454,7 +460,7 @@ namespace FinUchetClient.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"BlockUser error: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"BlockUser error: {ex.Message}");
                 return false;
             }
         }
@@ -473,11 +479,92 @@ namespace FinUchetClient.Services
             }
         }
 
-        public async Task<dynamic?> GetAdminStatsAsync()
+        // ========== МЕТОДЫ ДЛЯ АДМИН-ПАНЕЛИ ==========
+
+        // Получение транзакций пользователя (для админа)
+        public async Task<List<TransactionModel>?> GetTransactionsByUserAsync(int userId)
         {
             try
             {
-                var response = await _client.GetAsync($"{_baseUrl}/admin/stats");
+                var response = await _client.GetAsync($"{_baseUrl}/admin/users/{userId}/transactions");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<TransactionModel>>(json);
+                }
+                return new List<TransactionModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetTransactionsByUser error: {ex.Message}");
+                return new List<TransactionModel>();
+            }
+        }
+
+        // Получение инвестиций пользователя (для админа)
+        public async Task<List<InvestmentModel>?> GetInvestmentsByUserAsync(int userId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"{_baseUrl}/admin/users/{userId}/investments");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<InvestmentModel>>(json);
+                }
+                return new List<InvestmentModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetInvestmentsByUser error: {ex.Message}");
+                return new List<InvestmentModel>();
+            }
+        }
+
+        // Получение сообщений пользователя (для админа)
+        public async Task<List<MessageModel>?> GetMessagesByUserAsync(int userId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"{_baseUrl}/admin/users/{userId}/messages");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<List<MessageModel>>(json);
+                }
+                return new List<MessageModel>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"GetMessagesByUser error: {ex.Message}");
+                return new List<MessageModel>();
+            }
+        }
+
+        // Смена пароля пользователя (админом)
+        public async Task<bool> ChangeUserPasswordAsync(int userId, string newPassword)
+        {
+            try
+            {
+                var data = new { user_id = userId, new_password = newPassword };
+                var json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _client.PostAsync($"{_baseUrl}/admin/users/{userId}/change-password", content);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"ChangeUserPassword error: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Статистика пользователя (для админа)
+        public async Task<dynamic?> GetUserStatsAsync(int userId)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"{_baseUrl}/admin/users/{userId}/stats");
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
@@ -487,11 +574,53 @@ namespace FinUchetClient.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"GetAdminStats error: {ex.Message}");
+                Console.WriteLine($"GetUserStats error: {ex.Message}");
                 return null;
             }
         }
 
+        // Экспорт данных пользователя в CSV
+        // Экспорт данных пользователя в CSV
+        public async Task<bool> ExportUserDataToCsvAsync(int userId, string filePath)
+        {
+            try
+            {
+                var response = await _client.GetAsync($"{_baseUrl}/admin/users/{userId}/export");
+                if (response.IsSuccessStatusCode)
+                {
+                    var csv = await response.Content.ReadAsStringAsync();
+                    // Сохраняем в UTF-8 без BOM
+                    await System.IO.File.WriteAllTextAsync(filePath, csv, new System.Text.UTF8Encoding(false));
+                    return true;
+                }
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ExportUserData error: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Отправка уведомления пользователю
+        public async Task<bool> SendNotificationToUserAsync(int userId, string subject, string message)
+        {
+            try
+            {
+                var data = new { user_id = userId, subject, message };
+                var json = JsonConvert.SerializeObject(data);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await _client.PostAsync($"{_baseUrl}/admin/users/{userId}/notify", content);
+                return response.IsSuccessStatusCode;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"SendNotification error: {ex.Message}");
+                return false;
+            }
+        }
+
+        // Получение всех сообщений для админа
         public async Task<dynamic?> GetAdminMessagesAsync()
         {
             try
@@ -511,25 +640,23 @@ namespace FinUchetClient.Services
             }
         }
 
-        public async Task<bool> BlockUserAsync(int userId, bool block, int hours = 0)
+        // Получение статистики для админа
+        public async Task<dynamic?> GetAdminStatsAsync()
         {
             try
             {
-                var data = new { user_id = userId, block = block, hours = hours };
-                var json = JsonConvert.SerializeObject(data);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _client.PostAsync($"{_baseUrl}/admin/users/block", content);
-
-                var responseBody = await response.Content.ReadAsStringAsync();
-                System.Diagnostics.Debug.WriteLine($"BlockUser response: {response.StatusCode}");
-                System.Diagnostics.Debug.WriteLine($"Response body: {responseBody}");
-
-                return response.IsSuccessStatusCode;
+                var response = await _client.GetAsync($"{_baseUrl}/admin/stats");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonConvert.DeserializeObject<dynamic>(json);
+                }
+                return null;
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"BlockUser error: {ex.Message}");
-                return false;
+                Console.WriteLine($"GetAdminStats error: {ex.Message}");
+                return null;
             }
         }
     }

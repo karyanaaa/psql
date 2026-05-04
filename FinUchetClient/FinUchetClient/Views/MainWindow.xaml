@@ -54,14 +54,14 @@
                         FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ShowInvestments_Click" Width="127"/>
                 <Button Content="📚 Полезное" Margin="15,5" Background="Transparent" Foreground="White" 
                         FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ShowUseful_Click" Width="127"/>
-                <Button Content="❓ Как пользоваться" Margin="15,5" Background="Transparent" Foreground="White" 
-                        FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ShowInstructions_Click" Width="127"/>
-                <Button Content="✉️ Обратная связь" Margin="15,5" Background="Transparent" Foreground="White" 
-                        FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ShowFeedback_Click" Width="127"/>
+ 
 
                 <Button x:Name="ThemeToggleButton" Content="🌙 Тёмная тема" Margin="15,5" Background="Transparent" Foreground="White" 
                         FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ToggleTheme_Click" Width="130"/>
-
+                <Button Content="✉️ Обратная связь" Margin="15,5" Background="Transparent" Foreground="White" 
+                       FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ShowFeedback_Click" Width="148"/>
+                <Button Content="❓ Как пользоваться" Margin="15,5" Background="Transparent" Foreground="White" 
+                        FontSize="14" HorizontalAlignment="Left" Padding="12,10" Click="ShowInstructions_Click" Width="162"/>
                 <Separator Background="#3A546D" Margin="15,20,15,10" Height="1"/>
 
                 <Button Content="🚪 Выход" Margin="15,10" Height="40" Background="#E74C3C" Foreground="White" 

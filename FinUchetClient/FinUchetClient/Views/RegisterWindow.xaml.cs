@@ -2,6 +2,7 @@
 using System;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace FinUchetClient.Views
 {
@@ -13,6 +14,11 @@ namespace FinUchetClient.Views
         public RegisterWindow()
         {
             InitializeComponent();
+            this.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    this.DragMove();
+            };
             _apiService = new ApiService();
             _authService = new AuthService(_apiService);
         }

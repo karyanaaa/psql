@@ -1,3 +1,4 @@
+# auth_simple.py (оставь как есть, он уже работает)
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
@@ -6,7 +7,7 @@ SECRET_KEY = "secret_key_for_course_project"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
-# Используем более простой хэшер вместо bcrypt
+# Используем sha256_crypt (не требует bcrypt)
 pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
 
 def verify_password(plain_password, hashed_password):

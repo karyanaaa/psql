@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Windows;
 using System.Windows.Media;
 
@@ -22,73 +21,68 @@ namespace FinUchetClient.Services
             var app = Application.Current;
             if (app == null) return;
 
-            // Находим и удаляем старые словари темы
-            var toRemove = app.Resources.MergedDictionaries
-                .Where(d => d.Source != null && d.Source.ToString().Contains("Theme"))
-                .ToList();
-
-            foreach (var dict in toRemove)
-                app.Resources.MergedDictionaries.Remove(dict);
-
-            // Создаем новый словарь ресурсов с цветами
-            var themeDict = new ResourceDictionary();
-
-            if (isDark)
+            // Применяем тему ко всем открытым окнам
+            foreach (Window window in app.Windows)
             {
-                themeDict.Add("BackgroundColor", new SolidColorBrush(Color.FromRgb(45, 45, 48)));
-                themeDict.Add("ForegroundColor", new SolidColorBrush(Color.FromRgb(255, 255, 255)));
-                themeDict.Add("CardBackground", new SolidColorBrush(Color.FromRgb(62, 62, 66)));
-                themeDict.Add("SidebarBackground", new SolidColorBrush(Color.FromRgb(30, 30, 35)));
-                themeDict.Add("BorderColor", new SolidColorBrush(Color.FromRgb(85, 85, 85)));
-                themeDict.Add("HeaderBackground", new SolidColorBrush(Color.FromRgb(37, 37, 38)));
-            }
-            else
-            {
-                themeDict.Add("BackgroundColor", new SolidColorBrush(Color.FromRgb(245, 247, 250)));
-                themeDict.Add("ForegroundColor", new SolidColorBrush(Color.FromRgb(44, 62, 80)));
-                themeDict.Add("CardBackground", new SolidColorBrush(Color.FromRgb(255, 255, 255)));
-                themeDict.Add("SidebarBackground", new SolidColorBrush(Color.FromRgb(44, 62, 80)));
-                themeDict.Add("BorderColor", new SolidColorBrush(Color.FromRgb(224, 224, 224)));
-                themeDict.Add("HeaderBackground", new SolidColorBrush(Color.FromRgb(255, 255, 255)));
-            }
-
-            app.Resources.MergedDictionaries.Add(themeDict);
-
-            // Обновляем все открытые окна
-            UpdateAllWindows();
-        }
-
-        private static void UpdateAllWindows()
-        {
-            foreach (Window window in Application.Current.Windows)
-            {
-                UpdateWindowColors(window);
-
-                // Если это MainWindow, обновляем боковую панель
-                if (window is Views.MainWindow mainWin)
-                {
-                    var sidebar = mainWin.FindName("SidebarPanel") as System.Windows.Controls.Border;
-                    if (sidebar != null)
-                    {
-                        sidebar.Background = IsDarkTheme ?
-                            new SolidColorBrush(Color.FromRgb(30, 30, 35)) :
-                            new SolidColorBrush(Color.FromRgb(44, 62, 80));
-                    }
-                }
+                UpdateWindowTheme(window);
             }
         }
 
-        private static void UpdateWindowColors(Window window)
+        private static void UpdateWindowTheme(Window window)
         {
             if (IsDarkTheme)
             {
                 window.Background = new SolidColorBrush(Color.FromRgb(45, 45, 48));
-                window.Foreground = Brushes.White;
+
+                // Если это MainWindow, обновляем боковую панель
+                if (window is Views.MainWindow mainWindow)
+                {
+                    var sidebar = mainWindow.FindName("SidebarPanel") as System.Windows.Controls.Border;
+                    if (sidebar != null)
+                    {
+                        sidebar.Background = new SolidColorBrush(Color.FromRgb(30, 30, 35));
+                    }
+
+                    // Обновляем цвет кнопок в боковой панели
+                    var stackPanel = sidebar?.Child as System.Windows.Controls.StackPanel;
+                    if (stackPanel != null)
+                    {
+                        foreach (var child in stackPanel.Children)
+                        {
+                            if (child is System.Windows.Controls.Button btn)
+                            {
+                                btn.Background = System.Windows.Media.Brushes.Transparent;
+                                btn.Foreground = System.Windows.Media.Brushes.White;
+                            }
+                        }
+                    }
+                }
             }
             else
             {
                 window.Background = new SolidColorBrush(Color.FromRgb(245, 247, 250));
-                window.Foreground = new SolidColorBrush(Color.FromRgb(44, 62, 80));
+
+                if (window is Views.MainWindow mainWindow)
+                {
+                    var sidebar = mainWindow.FindName("SidebarPanel") as System.Windows.Controls.Border;
+                    if (sidebar != null)
+                    {
+                        sidebar.Background = new SolidColorBrush(Color.FromRgb(44, 62, 80));
+                    }
+
+                    var stackPanel = sidebar?.Child as System.Windows.Controls.StackPanel;
+                    if (stackPanel != null)
+                    {
+                        foreach (var child in stackPanel.Children)
+                        {
+                            if (child is System.Windows.Controls.Button btn)
+                            {
+                                btn.Background = System.Windows.Media.Brushes.Transparent;
+                                btn.Foreground = System.Windows.Media.Brushes.White;
+                            }
+                        }
+                    }
+                }
             }
         }
 

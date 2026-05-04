@@ -1,7 +1,8 @@
-﻿using System;
+﻿using FinUchetClient.Models;
+using System;
 using System.Windows;
 using System.Windows.Controls;
-using FinUchetClient.Models;
+using System.Windows.Input;
 
 namespace FinUchetClient.Views
 {
@@ -13,6 +14,11 @@ namespace FinUchetClient.Views
         public EditInvestmentWindow(InvestmentModel investment)
         {
             InitializeComponent();
+            this.MouseLeftButtonDown += (s, e) =>
+            {
+                if (e.ButtonState == MouseButtonState.Pressed)
+                    this.DragMove();
+            };
             _original = investment;
             LoadData();
         }
